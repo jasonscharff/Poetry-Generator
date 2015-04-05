@@ -502,6 +502,10 @@ def generatePoemWithoutTheme(frequencies, syllableCount, pronunciationGuide):
 #This method handles the user input to enter a theme as well as the actual calling of the proper methods to generate a poem.
 #It starts by generating the proper database, then prompts the user for a theme, and prints out the generates the poem.
 #This method continues until the user enters the keyword (by default "done") to quit.
+#Everything is surrounded in a try, except because certain rare probabilities cause a poem to be impossible
+#to finish in which case it's easier to throw an exception because of all of the nested methods
+#then to return certain things which trickle down. If this happens, a new poem is just generated because
+#the probability is fairly rare that the exception is thrown.
 def main():
     print("The Library is being generated. Please wait a bit.")
     syllableTuple =  createSyllableMap()
