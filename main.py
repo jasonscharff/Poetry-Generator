@@ -24,7 +24,7 @@ stressed = Set()
 lineStarters = Set()
 rhymingDictionary = {}
 #The Big Huge Thesaurus API Key
-apiKey = "enter in your own key here"
+apiKey = "enter your own key here"
 
 #Word to be entered when prompted for theme to quit the program.
 terminateProgram = 'done'
@@ -122,13 +122,13 @@ def parseTrainingTexts(syllablePronounciation):
                     else:
                         unstressed.add(word)
                 if previous in successors:
-                    entry = successors[previous]
+                    entry = successors[previous.lower()]
                     if word in entry :
                         entry[word] += 1
                     else :
                          entry[word] = 1
                 elif previous != nothingPrecedes:
-                    successors[previous] = {word:1}
+                    successors[previous.lower()] = {word:1}
                 previous = word
 
     return successors
@@ -212,7 +212,7 @@ def forcePick(syllablesNeeded, syllableCount, syllablePronunciation, rhymeSound)
 #param rhymeSound: The sound that the last word of the line must end with to rhyme with another line. Can be None if first in a rhyming pattern.
 #param rhymeWord: The word that the last word of the line will need to rhyme with another line. Can be None if first in a rhyming pattern
 def getNextWord(word, largeDictionary, syllableCount, syllablesRemaining, syllablePronunciation, rhymeSound, rhymeWord):
-    subDict = largeDictionary[word]
+    subDict = largeDictionary[word.lower()]
     weightedListTuple = toWeightedList(subDict, largeDictionary, syllableCount, syllablesRemaining, rhymeSound)
     if rhymeSound != None and syllablesRemaining <= 3 and  weightedListTuple[1] == False :
         contenders = forcePick(syllablesRemaining, syllableCount, syllablePronunciation, rhymeSound)
@@ -352,7 +352,11 @@ def generatePoemWithTheme(theme, frequencies, syllableCount, pronunciationGuide)
     response = urllib2.urlopen(url)
     data = json.load(response)
     key = data.keys()[0]
-    keywords = data[key]['syn'] + data[key]['rel'] + [theme]
+    keywords = [theme]
+    if('rel' in data[key]):
+       keywords += data[key]['rel']
+    if 'syn' in data[key]:
+        keywords += data[key]['syn']
     for word in keywords:
         word = word.encode('ascii', 'ignore')
         capitalized = word.capitalize()
@@ -502,10 +506,6 @@ def generatePoemWithoutTheme(frequencies, syllableCount, pronunciationGuide):
 #This method handles the user input to enter a theme as well as the actual calling of the proper methods to generate a poem.
 #It starts by generating the proper database, then prompts the user for a theme, and prints out the generates the poem.
 #This method continues until the user enters the keyword (by default "done") to quit.
-#Everything is surrounded in a try, except because certain rare probabilities cause a poem to be impossible
-#to finish in which case it's easier to throw an exception because of all of the nested methods
-#then to return certain things which trickle down. If this happens, a new poem is just generated because
-#the probability is fairly rare that the exception is thrown.
 def main():
     print("The Library is being generated. Please wait a bit.")
     syllableTuple =  createSyllableMap()
@@ -525,7 +525,7 @@ def main():
                 tryAgain = False
                 try:
                     print(generatePoemWithoutTheme(frequencies, syllableCount, pronunciationGuide))
-                except:
+                except (KeyError, ImpossibleLineError):
                     tryAgain = True
 
         else:
@@ -535,7 +535,7 @@ def main():
                 tryAgain = False
                 try:
                     print(generatePoemWithTheme(theme, frequencies, syllableCount, pronunciationGuide))
-                except:
+                except (KeyError, ImpossibleLineError):
                     tryAgain = True
         print("")
 
