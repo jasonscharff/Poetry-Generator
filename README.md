@@ -38,11 +38,4 @@ As well, to further the quality of the words used if I had more time I would add
 
 
 
-#####Jason Scharff
-
-
-
-
-
-
 
